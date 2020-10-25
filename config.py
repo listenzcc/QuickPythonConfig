@@ -47,7 +47,8 @@ class Config(object):
             for option in parser.options(section):
                 self.append(section, option, parser.get(section, option))
         # Report what we got
-        self.logger.debug('Configure is loaded: \n{}'.format(self.config))
+        self.logger.debug('Configure is loaded: \n{}'.format(
+            self.config.to_string()))
 
     def append(self, section, option, value):
         self.config = self.config.append(pd.Series(dict(SECTION=section,
