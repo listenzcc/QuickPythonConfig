@@ -1,4 +1,6 @@
-from . import CONFIG
-CONFIG.logger.info('Module 1 is running.')
+from Package import CONFIG
 
-b = 2
+
+def main():
+    CONFIG.logger.info('Module 2 is running.')
+    CONFIG.logger.debug('Module 2 is running.')
