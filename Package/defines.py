@@ -39,18 +39,10 @@ class Config(object):
 
         self.config = pd.DataFrame()
         # Load config from config
-        parser = configparser.RawConfigParser()
+        parser = configparser.ConfigParser()
         parser.read(cfg_path)
-        self.logger.debug(f'Confiure of {cfg_path} is read.')
-
-        # Read sections
-        for section in parser.sections():
-            # Read options
-            for option in parser.options(section):
-                self.append(section, option, parser.get(section, option))
-        # Report what we got
-        self.logger.debug('Configure is loaded: \n{}'.format(
-            self.config.to_string()))
+        self.parser = parser
+        self.logger.debug(f'Configure of {cfg_path} is used.')
 
     def append(self, section, option, value):
         self.config = self.config.append(pd.Series(dict(SECTION=section,
@@ -64,7 +56,14 @@ class Config(object):
         # Display the config
         print('----------------------------------------')
         print('----------------------------------------')
-        print(self.config)
+        # Read sections
+        for section in self.parser.sections():
+            print(f'Section: {section}')
+            # Read options
+            for option in self.parser.options(section):
+                value = self.parser[section][option]
+                print(f'    Option: {option}: {value}')
+
         print()
 
     def query(self, section, option, ignore_not_found=True):
