@@ -2,6 +2,7 @@
 from Package import CONFIG
 from module1 import main as m1
 from module2 import main as m2
+from module3 import main as m3
 
 # %%
 # Logger starts with console output everything
@@ -26,11 +27,18 @@ print(CONFIG.peek())
 
 # %%
 # CONFIG is called by the modules
-m1()
 # Switch the logger mode
 # Suppress DEBUGs
 CONFIG.reload_logger(name='release')
+m1()
 m2()
+
 # Console print DEBUGs
 CONFIG.reload_logger(name='develop')
 m2()
+
+# Peek the configures
+CONFIG.reload_logger(name='release')
+print(CONFIG.peek())
+
+m3()

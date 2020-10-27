@@ -36,9 +36,12 @@ class Config(object):
 
     def reload_cfg(self, cfg_path=None):
         # Reload configure parser
-        # Setup default cfg_path
         if cfg_path is None:
-            cfg_path = beside('logging.ini')
+            # If cfg_path is not specified,
+            # generate an empty config parser
+            self.parser = configparser.ConfigParser()
+            self.parser.read_string('')
+            return
 
         # Load config parser from cfg_path
         parser = configparser.ConfigParser()
@@ -47,16 +50,24 @@ class Config(object):
         self.logger.debug(f'Configure of {cfg_path} is used.')
 
     def peek(self):
-        # Display the config
+        # Restore the configures into a DataFrame,
+        # and return it
+        # Init DataFrame
         frame = pd.DataFrame()
+
+        # Walk though the configures
         for section in self.parser.sections():
             for option in self.parser[section]:
+                # Get value and append
                 value = self.get(section, option)
                 frame = frame.append(dict(Section=section,
                                           Option=option,
                                           Value=value),
                                      ignore_index=True)
-        frame = frame[['Section', 'Option', 'Value']]
+
+        if len(frame) > 0:
+            # Reorder the columns, if the DataFrame is not empty
+            frame = frame[['Section', 'Option', 'Value']]
         self.logger.debug(f'Peeked configure, {len(frame)} options are found')
         return frame
 
@@ -89,17 +100,24 @@ class Config(object):
                 raise err
             return None
 
-        self.logger.debug(f'Got configure: {section}.{option}: {value}')
+        self.logger.debug(f'Got configure: {section}.{option}: "{value}"')
         return value
 
     def set(self, section, option, value):
         # Set [section].[option] = [value],
         # create the key if it doesn't exist
-        if not section in self.parser:
+        if section in self.parser:
+            # Section exists
+            if option in self.parser[section]:
+                _value = self.get(section, option)
+                self.logger.warning(
+                    f'Overwriting {section}.{option}: "{_value}" with "{value}"')
+        else:
+            # Section doesn't exist
             self.parser.add_section(section)
             self.logger.debug(f'New section added: {section}')
         self.parser.set(section, option, value)
-        self.logger.info(f'Set configure: {section}.{option}: {value}')
+        self.logger.info(f'Set configure: {section}.{option}: "{value}"')
 
     def reset(self, section, option):
         # Reset [section].[option] as empty string '',
