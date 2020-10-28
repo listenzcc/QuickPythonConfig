@@ -37,6 +37,9 @@ m2()
 CONFIG.reload_logger(name='develop')
 m2()
 
+print(CONFIG.get_section('Section I'))
+print(CONFIG.get_section('Section III'))
+
 # Peek the configures
 CONFIG.reload_logger(name='release')
 print(CONFIG.peek())

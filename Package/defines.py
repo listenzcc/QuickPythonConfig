@@ -9,6 +9,7 @@ import logging
 import logging.config
 import os
 import pandas as pd
+import traceback
 
 # %%
 
@@ -100,8 +101,30 @@ class Config(object):
                 raise err
             return None
 
-        self.logger.debug(f'Got configure: {section}.{option}: "{value}"')
+        self.logger.debug(f'Get configure: {section}.{option}: "{value}"')
         return value
+
+    def get_section(self, section, suppress_NoSectionError=True):
+        # Get options in [section],
+        # generate a dict for output
+        output = dict()
+        if self.parser.has_section(section):
+            # Walk though the [section]
+            for option in self.parser[section]:
+                # Add new [option]
+                value = self.get(section, option)
+                output[option] = value
+            self.logger.debug(
+                f'Get configure: {section}.* for {len(output)} options')
+
+        else:
+            # No [section] found
+            err = configparser.NoSectionError(section)
+            self.logger.error(f'No section error: {err}')
+            if not suppress_NoSectionError:
+                raise err
+
+        return output
 
     def set(self, section, option, value):
         # Set [section].[option] = [value],
@@ -111,7 +134,7 @@ class Config(object):
             if option in self.parser[section]:
                 _value = self.get(section, option)
                 self.logger.warning(
-                    f'Overwriting {section}.{option}: "{_value}" with "{value}"')
+                    f'Overwrite configure {section}.{option}: "{_value}" with "{value}"')
         else:
             # Section doesn't exist
             self.parser.add_section(section)
