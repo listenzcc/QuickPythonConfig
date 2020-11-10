@@ -19,7 +19,9 @@ def beside(name):
 
 
 class Config(object):
-    def __init__(self):
+    def __init__(self, use_default=True):
+        if use_default:
+            self.reload_logger(name='develop')
         pass
 
     def reload_logger(self, name, log_filepath='./logfile.log', cfg_path=None):
@@ -72,7 +74,7 @@ class Config(object):
         self.logger.debug(f'Peeked configure, {len(frame)} options are found')
         return frame
 
-    def get(self, section, option, suppress_NonExistError=True):
+    def get(self, section, option, suppress_NonExistError=True, default_value=None):
         # Get [section].[option],
         # interpolate if it is valid,
         # return raw value if it is invalid,
@@ -89,17 +91,19 @@ class Config(object):
 
         except configparser.NoSectionError as err:
             # No section found
-            self.logger.error(f'No section error: {err}')
+            self.logger.error(
+                f'No section error: {err}, using {default_value} instead')
             if not suppress_NonExistError:
                 raise err
-            return None
+            return default_value
 
         except configparser.NoOptionError as err:
             # No option found
-            self.logger.error(f'No option error: {err}')
+            self.logger.error(
+                f'No option error: {err}, using {default_value} instead')
             if not suppress_NonExistError:
                 raise err
-            return None
+            return default_value
 
         self.logger.debug(f'Get configure: {section}.{option}: "{value}"')
         return value
@@ -129,6 +133,11 @@ class Config(object):
     def set(self, section, option, value):
         # Set [section].[option] = [value],
         # create the key if it doesn't exist
+        if not isinstance(value, str):
+            value = value.__str__()
+            self.logger.warning(
+                f'Value is not a string, convert it into "{value}"')
+
         if section in self.parser:
             # Section exists
             if option in self.parser[section]:

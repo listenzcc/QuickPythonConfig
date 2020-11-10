@@ -6,6 +6,6 @@
 from .defines import Config
 
 CONFIG = Config()
-CONFIG.reload_logger(name='develop')
+# CONFIG.reload_logger(name='develop')
 
 # %%
